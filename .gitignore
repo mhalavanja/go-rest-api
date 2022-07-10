@@ -3,3 +3,6 @@ tmp/
 biljeske.md
 teme.pdf
 *session.sql
+db/sqlc/
+go.mod
+go.sum
