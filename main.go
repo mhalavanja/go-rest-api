@@ -1,19 +1,30 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"database/sql"
+	"log"
+
+	_ "github.com/lib/pq"
+	"main.go/api"
+	"main.go/db"
+)
+
+const (
+	dbDriver      = "postgres"
+	dbSource      = "postgresql://root:secret@localhost:5432/diplomski?sslmode=disable"
+	serverAddress = "0.0.0.0:8080"
+)
 
 func main() {
-	router := gin.Default()
+	conn, err := sql.Open(dbDriver, dbSource)
+	if err != nil {
+		log.Fatal("cannot connect to the database")
+	}
 
-	authorized := router.Group("")
-	authorized.Use(gin.BasicAuth(gin.Accounts{
-		"admin": "admin",
-	}))
-
-	authorized.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
-	router.Run()
+	store := db.NewStore(conn)
+	server := api.NewServer(store)
+	err = server.Start(serverAddress)
+	if err != nil {
+		log.Fatal("cannot start server")
+	}
 }

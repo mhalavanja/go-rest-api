@@ -1,7 +1,7 @@
 postgres:
 	docker run --name postgres -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:alpine
 
-start:
+startDb:
 	docker start postgres
 
 createdb:
@@ -22,4 +22,6 @@ migratedown:
 sqlc:
 	sqlc generate
 
-.PHONY: postgres start createdb dropdb shell migrateup migratedown sqlc
+server:
+	go run main.go
+.PHONY: postgres startDb createdb dropdb shell migrateup migratedown sqlc server
