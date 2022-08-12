@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"main.go/db/sqlc"
+	"dipl/db/sqlc"
 )
 
 type Store struct {

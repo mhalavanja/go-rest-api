@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"log"
 
+	"dipl/api"
+	"dipl/db"
 	_ "github.com/lib/pq"
-	"main.go/api"
-	"main.go/db"
 )
 
 const (
@@ -26,5 +26,6 @@ func main() {
 	err = server.Start(serverAddress)
 	if err != nil {
 		log.Fatal("cannot start server")
+		return
 	}
 }

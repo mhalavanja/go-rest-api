@@ -1,8 +1,8 @@
 package api
 
 import (
+	"dipl/db"
 	"github.com/gin-gonic/gin"
-	"main.go/db"
 )
 
 type Server struct {
@@ -16,8 +16,19 @@ func NewServer(store *db.Store) *Server {
 
 	router.GET("/users/:id", server.getUser)
 	router.POST("/users", server.createUser)
-	// router.DELETE("/users/:id", server.deleteUser)
+	router.DELETE("/users/:id", server.deleteUser)
 
+	// router.GET("/friends", server.getFriends)
+	router.GET("/friends/:id")
+	router.POST("/friends/:id")
+	router.DELETE("/friends/:id")
+
+	router.GET("/groups")
+	router.GET("/groups/:id")
+	router.POST("/groups/:id")
+	router.DELETE("/groups/:id")
+
+	router.GET("")
 	server.router = router
 	return server
 }
