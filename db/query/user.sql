@@ -1,8 +1,11 @@
 -- name: GetUser :one
 SELECT * FROM users 
 WHERE id = $1;
+-- name: GetUserByUsername :one
+SELECT * FROM users 
+WHERE username = $1;
 -- name: CreateUser :one
-INSERT INTO users (username, email, password)
+INSERT INTO users (username, email, hashed_password)
 VALUES ($1, $2, $3)
 RETURNING *;
 -- name: UpdateUsername :exec
@@ -15,7 +18,7 @@ SET email = $1
 WHERE id = $2;
 -- name: UpdatePassword :exec
 UPDATE users
-SET password = $1
+SET hashed_password = $1
 WHERE id = $2;
 -- name: DeleteUser :exec
 DELETE FROM users
