@@ -2,16 +2,29 @@ package api
 
 import (
 	"dipl/db"
+	"dipl/token"
+	"dipl/util"
+	"fmt"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	store  *db.Store
-	router *gin.Engine
+	config     util.Config
+	store      *db.Store
+	tokenMaker *token.JWTMaker
+	router     *gin.Engine
 }
 
-func NewServer(store *db.Store) *Server {
-	server := &Server{store: store}
+func NewServer(config util.Config, store *db.Store) (*Server, error) {
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create new JWTMaker: %w", err)
+	}
+	server := &Server{
+		config:     config,
+		tokenMaker: tokenMaker,
+		store:      store,
+	}
 	router := gin.Default()
 
 	router.GET("/users/:id", server.getUser)
@@ -30,7 +43,7 @@ func NewServer(store *db.Store) *Server {
 
 	router.GET("")
 	server.router = router
-	return server
+	return server, nil
 }
 
 func (server *Server) Start(address string) error {
