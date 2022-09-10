@@ -1,17 +1,17 @@
 postgres:
-	docker run --name postgres -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:alpine
+	docker run --name postgresDiplomski -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:alpine
 
 startDb:
-	docker start postgres
+	docker start postgresDiplomski
 
 createdb:
-	docker exec -it postgres createdb --username=root --owner=root diplomski
+	docker exec -it postgresDiplomski createdb --username=root --owner=root diplomski
 
 dropdb:
-	docker exec -it postgres dropdb diplomski
+	docker exec -it postgresDiplomski dropdb diplomski
 
 shell:
-	docker exec -it postgres psql -d diplomski
+	docker exec -it postgresDiplomski psql -d diplomski
 
 migrateup:
 	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/diplomski?sslmode=disable" -verbose up
@@ -24,4 +24,5 @@ sqlc:
 
 server:
 	go run main.go
+
 .PHONY: postgres startDb createdb dropdb shell migrateup migratedown sqlc server
