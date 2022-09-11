@@ -6,3 +6,4 @@ teme.pdf
 db/sqlc/
 go.mod
 go.sum
+fix_migration.sql

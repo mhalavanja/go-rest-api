@@ -26,9 +26,9 @@ func NewServer(config util.Config, store *db.Store) (*Server, error) {
 		store:      store,
 	}
 	router := gin.Default()
-
+	router.POST("/signup", server.createUser)
+	router.POST("/authenticate", server.authUser)
 	router.GET("/users/:id", server.getUser)
-	router.POST("/users", server.createUser)
 	router.DELETE("/users/:id", server.deleteUser)
 
 	// router.GET("/friends", server.getFriends)
