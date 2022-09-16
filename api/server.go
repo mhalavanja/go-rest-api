@@ -1,7 +1,7 @@
 package api
 
 import (
-	"dipl/db"
+	"dipl/db/sqlc"
 	"dipl/token"
 	"dipl/util"
 	"fmt"
@@ -10,12 +10,12 @@ import (
 
 type Server struct {
 	config     util.Config
-	store      *db.Store
+	store      *sqlc.Queries
 	tokenMaker *token.JWTMaker
 	router     *gin.Engine
 }
 
-func NewServer(config util.Config, store *db.Store) (*Server, error) {
+func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new JWTMaker: %w", err)
@@ -26,22 +26,25 @@ func NewServer(config util.Config, store *db.Store) (*Server, error) {
 		store:      store,
 	}
 	router := gin.Default()
+	router.GET("")
 	router.POST("/signup", server.createUser)
 	router.POST("/authenticate", server.authUser)
-	router.GET("/users/:id", server.getUser)
-	router.DELETE("/users/:id", server.deleteUser)
 
-	// router.GET("/friends", server.getFriends)
-	router.GET("/friends/:id")
-	router.POST("/friends/:id")
-	router.DELETE("/friends/:id")
+	authGroup := router.Group("/").Use(authMiddleware(*server.tokenMaker))
 
-	router.GET("/groups")
-	router.GET("/groups/:id")
-	router.POST("/groups/:id")
-	router.DELETE("/groups/:id")
+	authGroup.GET("/users/:id", server.getUser)
+	authGroup.DELETE("/users/:id", server.deleteUser)
 
-	router.GET("")
+	// authGroup.GET("/friends", server.getFriends)
+	authGroup.GET("/friends/:id")
+	authGroup.POST("/friends/:id")
+	authGroup.DELETE("/friends/:id")
+
+	authGroup.GET("/groups")
+	authGroup.GET("/groups/:id")
+	authGroup.POST("/groups/:id")
+	authGroup.DELETE("/groups/:id")
+
 	server.router = router
 	return server, nil
 }

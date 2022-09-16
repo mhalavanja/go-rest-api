@@ -13,12 +13,11 @@ CREATE TABLE "friends" (
 
 CREATE TABLE "groups" (
   "id" bigserial PRIMARY KEY,
-  "name" varchar(30) UNIQUE NOT NULL,
-  "user_id_owner" bigint NOT NULL,
-  "num_of_people" int NOT NULL DEFAULT 1
+  "name" varchar(60) UNIQUE NOT NULL,
+  "user_id_owner" bigint NOT NULL
 );
 
-CREATE TABLE "group_users" (
+CREATE TABLE "groups_users" (
   "id" bigserial PRIMARY KEY,
   "group_id" bigint UNIQUE NOT NULL,
   "user_id" bigint NOT NULL,
@@ -31,6 +30,6 @@ ALTER TABLE "friends" ADD FOREIGN KEY ("user_id_friend") REFERENCES "users" ("id
 
 ALTER TABLE "groups" ADD FOREIGN KEY ("user_id_owner") REFERENCES "users" ("id");
 
-ALTER TABLE "group_users" ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
+ALTER TABLE "groups_users" ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
 
-ALTER TABLE "group_users" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "groups_users" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");

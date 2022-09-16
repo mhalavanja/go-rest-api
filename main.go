@@ -5,8 +5,9 @@ import (
 	"log"
 
 	"dipl/api"
-	"dipl/db"
+	"dipl/db/sqlc"
 	"dipl/util"
+
 	_ "github.com/lib/pq"
 )
 
@@ -21,7 +22,7 @@ func main() {
 		log.Fatal("cannot connect to the database: ", err)
 	}
 
-	store := db.NewStore(conn)
+	store := sqlc.New(conn)
 	server, err := api.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server: ", err)
