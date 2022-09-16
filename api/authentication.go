@@ -20,7 +20,7 @@ type authUserResponse struct {
 	Username             string    `json:"username"`
 }
 
-var wrong_username_or_password string = "Wrong username or password"
+const wrongUsernameOrPassword = "Wrong username or password"
 
 func (server *Server) authUser(ctx *gin.Context) {
 	var req authUserRequest
@@ -34,7 +34,7 @@ func (server *Server) authUser(ctx *gin.Context) {
 	if err != nil {
 		log.Println("authUserRequest - server.store.GetUserByUsername req =", req, "err =", err)
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusUnauthorized, wrong_username_or_password)
+			ctx.JSON(http.StatusUnauthorized, wrongUsernameOrPassword)
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
@@ -44,7 +44,7 @@ func (server *Server) authUser(ctx *gin.Context) {
 	err = bcrypt.CompareHashAndPassword([]byte(user.HashedPassword), []byte(req.Password))
 	if err != nil {
 		log.Println("authUserRequest - bcrypt.CompareHashAndPassword - wrong password")
-		ctx.JSON(http.StatusUnauthorized, wrong_username_or_password)
+		ctx.JSON(http.StatusUnauthorized, wrongUsernameOrPassword)
 		return
 	}
 
