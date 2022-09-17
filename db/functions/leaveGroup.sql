@@ -9,14 +9,7 @@ DELETE FROM groups_users
 WHERE user_id = userId
 AND group_id = groupId;
 
-SELECT COUNT(user_id) FROM groups_users
-INTO numOfPeopleInGroup
-WHERE group_id = groupId;
-
-IF numOfPeopleInGroup = 0 THEN
-  DELETE FROM groups
-  WHERE id = groupId;
-END IF;
+CALL deleteGroupIfEmpty(groupId);
 
 COMMIT;
 END;$$

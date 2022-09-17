@@ -21,5 +21,4 @@ UPDATE users
 SET hashed_password = $1
 WHERE id = $2;
 -- name: DeleteUser :exec
-DELETE FROM users
-WHERE id = $1;
+CALL deleteUser($1);
