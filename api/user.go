@@ -3,25 +3,17 @@ package api
 import (
 	"database/sql"
 	"dipl/db/sqlc"
-	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
+	"dipl/token"
 	"log"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
-type GetDeleteUserRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
 func (server *Server) getUser(ctx *gin.Context) {
-	var req GetDeleteUserRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	usr, err := server.store.GetUser(ctx, req.ID)
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+	usr, err := server.store.GetUser(ctx, userId)
 
 	if err != nil {
 		log.Print(err.Error())
@@ -74,17 +66,102 @@ func (server *Server) createUser(ctx *gin.Context) {
 }
 
 func (server *Server) deleteUser(ctx *gin.Context) {
-	var req GetDeleteUserRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
-	err := server.store.DeleteUser(ctx, req.ID)
+	err := server.store.DeleteUser(ctx, userId)
 	if err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
+}
+
+type updateUsernameRequest struct {
+	Username string `json:"username" binding:"required"`
+}
+
+func (server *Server) updateUsername(ctx *gin.Context) {
+	var req updateUsernameRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Print(err.Error())
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+
+	arg := sqlc.UpdateUsernameParams{
+		Username: req.Username,
+		ID:       userId,
+	}
+
+	err := server.store.UpdateUsername(ctx, arg)
+	if err != nil {
+		log.Print(err.Error())
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
+
+type updateEmailRequest struct {
+	Email string `json:"email" binding:"required,email"`
+}
+
+func (server *Server) updateEmail(ctx *gin.Context) {
+	var req updateEmailRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Print(err.Error())
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+
+	arg := sqlc.UpdateEmailParams{
+		Email: req.Email,
+		ID:    userId,
+	}
+
+	err := server.store.UpdateEmail(ctx, arg)
+	if err != nil {
+		log.Print(err.Error())
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.Status(http.StatusOK)
+}
+
+type updatePasswordRequest struct {
+	Password string `json:"password" binding:"required"`
+}
+
+func (server *Server) updatePassword(ctx *gin.Context) {
+	var req updatePasswordRequest
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		log.Print(err.Error())
+		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	arg := sqlc.UpdatePasswordParams{
+		HashedPassword: string(hashedPassword),
+		ID:             userId,
+	}
+
+	err = server.store.UpdatePassword(ctx, arg)
+	if err != nil {
+		log.Print(err.Error())
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	ctx.Status(http.StatusOK)
 }
