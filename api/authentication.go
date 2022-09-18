@@ -49,7 +49,7 @@ func (server *Server) authUser(ctx *gin.Context) {
 	}
 
 	accessToken, accessPayload, err := server.tokenMaker.CreateToken(
-		user.Username,
+		user.ID,
 		server.config.AccessTokenDuration,
 	)
 	if err != nil {
