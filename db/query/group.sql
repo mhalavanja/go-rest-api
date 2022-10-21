@@ -1,5 +1,5 @@
 -- name: CreateGroup :exec
-CALL createGroup($1, $2);
+CALL createGroup(@groupName, @userId);
 -- name: UpdateGroupOwner :exec
 UPDATE groups
 SET user_id_owner = $1
@@ -8,18 +8,18 @@ WHERE id = $2;
 UPDATE groups
 SET name = $1
 WHERE id = $2;
--- name: DeleteGroup :exec
-CALL deleteGroup($1);
+-- name: TryDeleteGroup :exec
+CALL tryDeleteGroup(sqlc.arg(groupId), sqlc.arg(userId));
 -- name: JoinGroup :exec
 INSERT INTO groups_users (group_id, user_id)
 VALUES ($1, $2);
 -- name: LeaveGroup :exec
-CALL leaveGroup($1, $2);
+CALL leaveGroup(sqlc.arg(groupId), sqlc.arg(userId));
 -- name: AddUserToGroup :exec
 INSERT INTO groups_users (group_id, user_id)
 VALUES ($1, $2);
 -- name: RemoveUserFromGroup :exec
-CALL leaveGroup($1, $2);
+CALL leaveGroup(sqlc.arg(groupId), sqlc.arg(userId));
 -- name: AddUserAsAdmin :exec
 UPDATE groups_users
 SET is_admin = true

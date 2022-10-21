@@ -18,4 +18,4 @@ UPDATE users
 SET hashed_password = $1
 WHERE id = $2;
 -- name: DeleteUser :exec
-CALL deleteUser($1);
+CALL deleteUser(sqlc.arg(userId));
