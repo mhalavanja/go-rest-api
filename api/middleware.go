@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"dipl/token"
+	"github.com/mhalavanja/go-rest-api/token"
 
 	"github.com/gin-gonic/gin"
 )

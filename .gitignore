@@ -4,7 +4,6 @@ biljeske.md
 teme.pdf
 *session.sql
 db/sqlc/
-go.mod
 go.sum
 fix_migration.sql
 diplomski-pdf/

@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"log"
 
-	"dipl/api"
-	"dipl/db/sqlc"
-	"dipl/util"
+	"github.com/mhalavanja/go-rest-api/api"
+	"github.com/mhalavanja/go-rest-api/db/sqlc"
+	"github.com/mhalavanja/go-rest-api/util"
 
 	_ "github.com/lib/pq"
 )

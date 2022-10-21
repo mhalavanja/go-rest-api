@@ -2,8 +2,8 @@ package api
 
 import (
 	"database/sql"
-	"dipl/db/sqlc"
-	"dipl/token"
+	"github.com/mhalavanja/go-rest-api/db/sqlc"
+	"github.com/mhalavanja/go-rest-api/token"
 	"log"
 	"net/http"
 

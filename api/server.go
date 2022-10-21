@@ -1,11 +1,11 @@
 package api
 
 import (
-	"dipl/db/sqlc"
-	"dipl/token"
-	"dipl/util"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/mhalavanja/go-rest-api/db/sqlc"
+	"github.com/mhalavanja/go-rest-api/token"
+	"github.com/mhalavanja/go-rest-api/util"
 )
 
 type Server struct {
