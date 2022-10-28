@@ -1,3 +1,12 @@
+-- name: GetGroup :one
+SELECT *
+FROM groups
+WHERE id = $1
+  AND user_id_owner = $2;
+-- name: GetGroups :many
+SELECT name
+FROM groups
+WHERE user_id_owner = $1;
 -- name: CreateGroup :exec
 CALL createGroup(@group_name::text, @user_id::bigint);
 -- name: UpdateGroupOwner :exec
