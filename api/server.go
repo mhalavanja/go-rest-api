@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+
 	"github.com/gin-gonic/gin"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
@@ -32,18 +33,29 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 
 	authGroup := router.Group("/").Use(authMiddleware(*server.tokenMaker))
 
-	authGroup.GET("/users/:id", server.getUser)
-	authGroup.DELETE("/users/:id", server.deleteUser)
+	authGroup.GET("/user/", server.getUser)
+	authGroup.DELETE("/user", server.deleteUser)
+	authGroup.PUT("/user/email", server.updateEmail)
+	authGroup.PUT("/user/username", server.updateUsername)
+	authGroup.PUT("/user/password", server.updatePassword)
 
-	// authGroup.GET("/friends", server.getFriends)
-	authGroup.GET("/friends/:id")
-	authGroup.POST("/friends/:id")
-	authGroup.DELETE("/friends/:id")
+	authGroup.GET("/friends", server.getFriends)
+	authGroup.GET("/friends/:id", server.getFriend)
+	authGroup.POST("/friends", server.addFriend)
+	authGroup.DELETE("/friends/:id", server.deleteFriend)
 
-	authGroup.GET("/groups")
-	authGroup.GET("/groups/:id")
-	authGroup.POST("/groups/:id")
-	authGroup.DELETE("/groups/:id")
+	authGroup.GET("/groups", server.getGroups)
+	authGroup.GET("/groups/:id", server.getGroup)
+	authGroup.POST("/groups", server.createGroup)
+	authGroup.POST("/groups/join/:id", server.joinGroup)
+	authGroup.DELETE("/groups/leave/:id", server.leaveGroup)
+	authGroup.DELETE("/groups/:id", server.deleteGroup)
+	authGroup.PUT("/groups/:id/owner", server.updateGroupOwner)
+	authGroup.PUT("/groups/:id/name", server.updateGroupName)
+	authGroup.POST("/groups/:id/user", server.addUserToGroup)
+	authGroup.DELETE("/groups/:id/user", server.removeUserFromGroup)
+	authGroup.POST("/groups/:id/admin", server.addUserAsAdmin)
+	authGroup.DELETE("/groups/:id/admin", server.removeUserAsAdmin)
 
 	server.router = router
 	return server, nil
