@@ -10,12 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type groupResponse struct {
-	GroupId   int64  `json:"groupId" binding:"required"`
-	GroupName string `json:"groupName" binding:"required"`
-	OwnerId   int64  `json:"ownerId" binding:"required"`
-}
-
 func (server *Server) getGroups(ctx *gin.Context) {
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
@@ -31,7 +25,7 @@ func (server *Server) getGroups(ctx *gin.Context) {
 
 func (server *Server) getGroup(ctx *gin.Context) {
 	var id int64
-	if err := ctx.ShouldBindQuery(&id); err != nil {
+	if err := ctx.ShouldBindUri(&id); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -54,13 +48,9 @@ func (server *Server) getGroup(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, group)
 }
 
-type groupIdRequest struct {
-	GroupId int64 `json:"groupId" binding:"required"`
-}
-
 func (server *Server) createGroup(ctx *gin.Context) {
 	var name string
-	if err := ctx.ShouldBindQuery(&name); err != nil {
+	if err := ctx.ShouldBindUri(&name); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -85,7 +75,7 @@ func (server *Server) createGroup(ctx *gin.Context) {
 
 func (server *Server) deleteGroup(ctx *gin.Context) {
 	var id int64
-	if err := ctx.ShouldBindQuery(&id); err != nil {
+	if err := ctx.ShouldBindUri(&id); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -106,7 +96,7 @@ func (server *Server) deleteGroup(ctx *gin.Context) {
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.Status(http.StatusOK)
 }
 
 type groupIdUserIdRequest struct {
@@ -114,79 +104,135 @@ type groupIdUserIdRequest struct {
 	UserId  int64 `json:"userId" binding:"required"`
 }
 
-func (server *Server) updateGroupOwner(ctx *gin.Context) {
-	var req groupIdUserIdRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-}
+// func (server *Server) updateGroupOwner(ctx *gin.Context) {
+// 	var req groupIdUserIdRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		log.Print(err.Error())
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
+// }
 
-type updateGroupNameRequest struct {
-	GroupId   int64  `json:"groupId" binding:"required"`
-	GroupName string `json:"groupName" binding:"required"`
-}
+// type updateGroupNameRequest struct {
+// 	GroupId   int64  `json:"groupId" binding:"required"`
+// 	GroupName string `json:"groupName" binding:"required"`
+// }
 
-func (server *Server) updateGroupName(ctx *gin.Context) {
-	var req updateGroupNameRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-}
+// func (server *Server) updateGroupName(ctx *gin.Context) {
+// 	var req updateGroupNameRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		log.Print(err.Error())
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
+// }
 
-func (server *Server) joinGroup(ctx *gin.Context) {
-	var req groupIdRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-}
+// func (server *Server) joinGroup(ctx *gin.Context) {
+// 	var req groupIdRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		log.Print(err.Error())
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
+// }
 
 func (server *Server) leaveGroup(ctx *gin.Context) {
-	var req groupIdRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	var groupId int64
+	if err := ctx.ShouldBindUri(&groupId); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+
+	arg := sqlc.LeaveGroupParams{
+		GroupID: groupId,
+		UserID:  userId,
+	}
+
+	err := server.store.LeaveGroup(ctx, arg)
+	if err != nil {
+		log.Print(err.Error())
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }
 
-func (server *Server) addUserToGroup(ctx *gin.Context) {
+func (server *Server) addFriendToGroup(ctx *gin.Context) {
 	var req groupIdUserIdRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindUri(&req); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+	if userId == req.UserId {
+		ctx.JSON(http.StatusUnprocessableEntity, "Can not add yourself to group")
+		return
+	}
+	arg := sqlc.AddFriendToGroupParams{
+		GroupID: req.GroupId,
+		UserID:  req.UserId,
+	}
+
+	err := server.store.AddFriendToGroup(ctx, arg)
+	if err != nil {
+		log.Print(err.Error())
+		// TODO: Dodati error koji se baca iz funkcije kada nisu prijatelji i hvatati ga ovdje te vracat prikladnu poruku
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }
 
 func (server *Server) removeUserFromGroup(ctx *gin.Context) {
 	var req groupIdUserIdRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	if err := ctx.ShouldBindUri(&req); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+	if userId == req.UserId {
+		ctx.JSON(http.StatusUnprocessableEntity, "Can not remove yourself to group. To leave a group use the following endpoint: /groups/:id/leave")
+		return
+	}
+	arg := sqlc.RemoveUserFromGroupParams{
+		GroupID: req.GroupId,
+		UserID:  req.UserId,
+	}
+
+	err := server.store.RemoveUserFromGroup(ctx, arg)
+	if err != nil {
+		log.Print(err.Error())
+		// TODO: Dodati error koji se baca iz funkcije kada user nije u toj grupi
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }
 
-func (server *Server) addUserAsAdmin(ctx *gin.Context) {
-	var req groupIdUserIdRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-}
+// func (server *Server) addUserAsAdmin(ctx *gin.Context) {
+// 	var req groupIdUserIdRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		log.Print(err.Error())
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
+// }
 
-func (server *Server) removeUserAsAdmin(ctx *gin.Context) {
-	var req groupIdUserIdRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-}
+// func (server *Server) removeUserAsAdmin(ctx *gin.Context) {
+// 	var req groupIdUserIdRequest
+// 	if err := ctx.ShouldBindJSON(&req); err != nil {
+// 		log.Print(err.Error())
+// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+// 		return
+// 	}
+// }

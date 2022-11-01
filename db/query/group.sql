@@ -1,7 +1,9 @@
 -- name: GetGroup :one
-SELECT *
+SELECT name AS group_name,
+  username AS owner_username
 FROM groups
-WHERE id = $1
+  JOIN users ON users.user_id = groups.user_id_owner
+WHERE groups.id = $1
   AND user_id_owner = $2;
 -- name: GetGroups :many
 SELECT name
@@ -23,19 +25,19 @@ CALL tryDeleteGroup(@group_id::bigint, @user_id::bigint);
 INSERT INTO groups_users (group_id, user_id)
 VALUES ($1, $2);
 -- name: LeaveGroup :exec
-CALL leaveGroup(@groupId::bigint, @user_id::bigint);
--- name: AddUserToGroup :exec
+CALL leaveGroup(@group_id::bigint, @user_id::bigint);
+-- name: AddFriendToGroup :exec
 INSERT INTO groups_users (group_id, user_id)
 VALUES ($1, $2);
 -- name: RemoveUserFromGroup :exec
 CALL leaveGroup(@group_id::bigint, @user_id::bigint);
--- name: AddUserAsAdmin :exec
-UPDATE groups_users
-SET is_admin = true
-WHERE group_id = $1
-  AND user_id = $2;
--- name: RemoveUserAsAdmin :exec
-UPDATE groups_users
-SET is_admin = false
-WHERE group_id = $1
-  AND user_id = $2;
+-- -- name: AddUserAsAdmin :exec
+-- UPDATE groups_users
+-- SET is_admin = true
+-- WHERE group_id = $1
+--   AND user_id = $2;
+-- -- name: RemoveUserAsAdmin :exec
+-- UPDATE groups_users
+-- SET is_admin = false
+-- WHERE group_id = $1
+--   AND user_id = $2;
