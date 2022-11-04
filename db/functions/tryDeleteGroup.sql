@@ -1,4 +1,5 @@
-CREATE OR REPLACE PROCEDURE tryDeleteGroup(groupId bigint, userId bigint) language plpgsql AS $$ DECLEARE ownerId integer;
+CREATE OR REPLACE PROCEDURE tryDeleteGroup(groupId bigint, userId bigint) language plpgsql AS $$
+DECLARE ownerId integer;
 BEGIN
 SELECT user_id_owner
 FROM groups INTO ownerId
