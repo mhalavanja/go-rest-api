@@ -33,7 +33,7 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 
 	authGroup := router.Group("/").Use(authMiddleware(*server.tokenMaker))
 
-	authGroup.GET("/user/", server.getUser)
+	authGroup.GET("/user", server.getUser)
 	authGroup.DELETE("/user", server.deleteUser)
 	authGroup.PUT("/user/email", server.updateEmail)
 	authGroup.PUT("/user/username", server.updateUsername)
@@ -52,8 +52,8 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 	authGroup.DELETE("/groups/:id", server.deleteGroup)
 	// authGroup.PUT("/groups/:id/owner", server.updateGroupOwner)
 	// authGroup.PUT("/groups/:id/name", server.updateGroupName)
-	authGroup.POST("/groups/:groupId/addUser/:userId", server.addFriendToGroup)
-	authGroup.DELETE("/groups/:groupId/removeUser/:userId", server.removeUserFromGroup)
+	authGroup.POST("/groups/addUser", server.addFriendToGroup)
+	authGroup.DELETE("/groups/removeUser", server.removeUserFromGroup)
 	// authGroup.POST("/groups/:id/admin", server.addUserAsAdmin)
 	// authGroup.DELETE("/groups/:id/admin", server.removeUserAsAdmin)
 

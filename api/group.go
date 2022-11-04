@@ -50,7 +50,7 @@ func (server *Server) getGroup(ctx *gin.Context) {
 
 func (server *Server) createGroup(ctx *gin.Context) {
 	var name string
-	if err := ctx.ShouldBindUri(&name); err != nil {
+	if err := ctx.ShouldBindJSON(&name); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -163,7 +163,7 @@ func (server *Server) leaveGroup(ctx *gin.Context) {
 
 func (server *Server) addFriendToGroup(ctx *gin.Context) {
 	var req groupIdUserIdRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -192,7 +192,7 @@ func (server *Server) addFriendToGroup(ctx *gin.Context) {
 
 func (server *Server) removeUserFromGroup(ctx *gin.Context) {
 	var req groupIdUserIdRequest
-	if err := ctx.ShouldBindUri(&req); err != nil {
+	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
