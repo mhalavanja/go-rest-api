@@ -27,7 +27,6 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 		store:      store,
 	}
 	router := gin.Default()
-	router.GET("")
 	router.POST("/sign-up", server.createUser)
 	router.POST("/authenticate", server.authUser)
 
@@ -35,9 +34,7 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 
 	authGroup.GET("/user", server.getUser)
 	authGroup.DELETE("/user", server.deleteUser)
-	authGroup.PUT("/user/email", server.updateEmail)
-	authGroup.PUT("/user/username", server.updateUsername)
-	authGroup.PUT("/user/password", server.updatePassword)
+	authGroup.PUT("/user", server.updateUser)
 
 	authGroup.GET("/friends", server.getFriends)
 	authGroup.GET("/friends/:id", server.getFriend)
@@ -47,15 +44,10 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 	authGroup.GET("/groups", server.getGroups)
 	authGroup.GET("/groups/:id", server.getGroup)
 	authGroup.POST("/groups", server.createGroup)
-	// authGroup.POST("/groups/join/:id", server.joinGroup)
-	authGroup.DELETE("/groups/:id/leave", server.leaveGroup)
+	authGroup.DELETE("/groups/leave/:id", server.leaveGroup)
 	authGroup.DELETE("/groups/:id", server.deleteGroup)
-	// authGroup.PUT("/groups/:id/owner", server.updateGroupOwner)
-	// authGroup.PUT("/groups/:id/name", server.updateGroupName)
 	authGroup.POST("/groups/addUser", server.addFriendToGroup)
 	authGroup.DELETE("/groups/removeUser", server.removeUserFromGroup)
-	// authGroup.POST("/groups/:id/admin", server.addUserAsAdmin)
-	// authGroup.DELETE("/groups/:id/admin", server.removeUserAsAdmin)
 
 	server.router = router
 	return server, nil

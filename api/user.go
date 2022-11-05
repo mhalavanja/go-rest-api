@@ -2,10 +2,11 @@ package api
 
 import (
 	"database/sql"
-	"github.com/mhalavanja/go-rest-api/db/sqlc"
-	"github.com/mhalavanja/go-rest-api/token"
 	"log"
 	"net/http"
+
+	"github.com/mhalavanja/go-rest-api/db/sqlc"
+	"github.com/mhalavanja/go-rest-api/token"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -76,12 +77,14 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	}
 }
 
-type updateUsernameRequest struct {
-	Username string `json:"username" binding:"required"`
+type updateUserRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email" binding:"email"`
+	Password string `json:"password"`
 }
 
-func (server *Server) updateUsername(ctx *gin.Context) {
-	var req updateUsernameRequest
+func (server *Server) updateUser(ctx *gin.Context) {
+	var req updateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -89,75 +92,24 @@ func (server *Server) updateUsername(ctx *gin.Context) {
 	}
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
-
-	arg := sqlc.UpdateUsernameParams{
-		Username: req.Username,
-		ID:       userId,
+	var hashedPassword []byte
+	if req.Password != "" {
+		var err error
+		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			return
+		}
 	}
 
-	err := server.store.UpdateUsername(ctx, arg)
-	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	ctx.Status(http.StatusOK)
-}
-
-type updateEmailRequest struct {
-	Email string `json:"email" binding:"required,email"`
-}
-
-func (server *Server) updateEmail(ctx *gin.Context) {
-	var req updateEmailRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
-
-	arg := sqlc.UpdateEmailParams{
-		Email: req.Email,
-		ID:    userId,
-	}
-
-	err := server.store.UpdateEmail(ctx, arg)
-	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-	ctx.Status(http.StatusOK)
-}
-
-type updatePasswordRequest struct {
-	Password string `json:"password" binding:"required"`
-}
-
-func (server *Server) updatePassword(ctx *gin.Context) {
-	var req updatePasswordRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-		return
-	}
-
-	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	arg := sqlc.UpdatePasswordParams{
-		HashedPassword: string(hashedPassword),
+	arg := sqlc.UpdateUserParams{
 		ID:             userId,
+		Username:       req.Username,
+		Email:          req.Email,
+		HashedPassword: string(hashedPassword),
 	}
 
-	err = server.store.UpdatePassword(ctx, arg)
+	err := server.store.UpdateUser(ctx, arg)
 	if err != nil {
 		log.Print(err.Error())
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))

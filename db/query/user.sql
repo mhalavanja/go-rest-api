@@ -1,5 +1,6 @@
 -- name: GetUser :one
-SELECT *
+SELECT username,
+    email
 FROM users
 WHERE id = $1;
 -- name: GetUserByUsername :one
@@ -10,17 +11,11 @@ WHERE username = $1;
 INSERT INTO users (username, email, hashed_password)
 VALUES ($1, $2, $3)
 RETURNING *;
--- name: UpdateUsername :exec
+-- name: UpdateUser :exec
 UPDATE users
-SET username = $1
-WHERE id = $2;
--- name: UpdateEmail :exec
-UPDATE users
-SET email = $1
-WHERE id = $2;
--- name: UpdatePassword :exec
-UPDATE users
-SET hashed_password = $1
-WHERE id = $2;
+SET username = $2,
+    email = $3,
+    hashed_password = $4
+WHERE id = $1;
 -- name: DeleteUser :exec
 CALL deleteUser(@user_id::bigint);

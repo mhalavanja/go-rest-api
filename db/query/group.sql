@@ -31,13 +31,3 @@ INSERT INTO groups_users (group_id, user_id)
 VALUES ($1, $2);
 -- name: RemoveUserFromGroup :exec
 CALL leaveGroup(@group_id::bigint, @user_id::bigint);
--- -- name: AddUserAsAdmin :exec
--- UPDATE groups_users
--- SET is_admin = true
--- WHERE group_id = $1
---   AND user_id = $2;
--- -- name: RemoveUserAsAdmin :exec
--- UPDATE groups_users
--- SET is_admin = false
--- WHERE group_id = $1
---   AND user_id = $2;

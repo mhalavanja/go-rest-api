@@ -18,7 +18,6 @@ CREATE TABLE "groups_users" (
   "id" bigserial PRIMARY KEY,
   "group_id" bigint UNIQUE NOT NULL,
   "user_id" bigint NOT NULL,
-  "is_admin" bool NOT NULL DEFAULT false
 );
 ALTER TABLE "friends"
 ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
