@@ -11,7 +11,7 @@ CREATE TABLE "friends" (
 );
 CREATE TABLE "groups" (
   "id" bigserial PRIMARY KEY,
-  "name" varchar(60) UNIQUE NOT NULL,
+  "name" varchar(60) NOT NULL,
   "user_id_owner" bigint NOT NULL
 );
 CREATE TABLE "groups_users" (

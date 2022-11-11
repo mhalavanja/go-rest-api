@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
@@ -27,7 +28,8 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 		store:      store,
 	}
 	router := gin.Default()
-	router.POST("/sign-up", server.createUser)
+	router.Use(cors.Default())
+	router.POST("/register", server.createUser)
 	router.POST("/authenticate", server.authUser)
 
 	authGroup := router.Group("/").Use(authMiddleware(*server.tokenMaker))
