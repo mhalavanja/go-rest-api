@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/mhalavanja/go-rest-api/consts"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
 )
@@ -14,8 +15,8 @@ func (server *Server) getFriends(ctx *gin.Context) {
 
 	friendNames, err := server.store.GetFriends(ctx, userId)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -25,8 +26,8 @@ func (server *Server) getFriends(ctx *gin.Context) {
 func (server *Server) getFriend(ctx *gin.Context) {
 	var friendId int64
 	if err := ctx.ShouldBindUri(&friendId); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: getFriend friendId=", friendId, err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideFriendId)
 		return
 	}
 
@@ -39,8 +40,8 @@ func (server *Server) getFriend(ctx *gin.Context) {
 
 	friend, err := server.store.GetFriend(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -54,8 +55,8 @@ func (server *Server) getFriend(ctx *gin.Context) {
 func (server *Server) addFriend(ctx *gin.Context) {
 	var friendId int64
 	if err := ctx.ShouldBindJSON(&friendId); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideFriendId)
 		return
 	}
 
@@ -68,8 +69,8 @@ func (server *Server) addFriend(ctx *gin.Context) {
 
 	err := server.store.AddFriend(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -79,8 +80,8 @@ func (server *Server) addFriend(ctx *gin.Context) {
 func (server *Server) deleteFriend(ctx *gin.Context) {
 	var friendId int64
 	if err := ctx.ShouldBindUri(&friendId); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideFriendId)
 		return
 	}
 
@@ -93,8 +94,8 @@ func (server *Server) deleteFriend(ctx *gin.Context) {
 
 	err := server.store.DeleteFriend(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 

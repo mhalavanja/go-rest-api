@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/mhalavanja/go-rest-api/consts"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
 
@@ -17,13 +18,13 @@ func (server *Server) getUser(ctx *gin.Context) {
 	usr, err := server.store.GetUser(ctx, userId)
 
 	if err != nil {
-		log.Print(err.Error())
+		log.Println("ERROR: getUser userId=", userId, " err=", err.Error())
 		if err == sql.ErrNoRows {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, consts.UserDoesNotExist)
 			return
 		}
 
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -39,14 +40,15 @@ type createUserRequest struct {
 func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.WrongUsernameOrPassword)
 		return
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -58,8 +60,8 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	usr, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -71,10 +73,12 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 
 	err := server.store.DeleteUser(ctx, userId)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
+
+	ctx.Status(http.StatusOK)
 }
 
 type updateUserRequest struct {
@@ -86,8 +90,8 @@ type updateUserRequest struct {
 func (server *Server) updateUser(ctx *gin.Context) {
 	var req updateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.Provide+"username, email and password")
 		return
 	}
 
@@ -97,7 +101,7 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		var err error
 		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+			ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 			return
 		}
 	}
@@ -111,9 +115,10 @@ func (server *Server) updateUser(ctx *gin.Context) {
 
 	err := server.store.UpdateUser(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
+
 	ctx.Status(http.StatusOK)
 }

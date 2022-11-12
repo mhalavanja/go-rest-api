@@ -20,7 +20,7 @@ func authMiddleware(tokenMaker token.JWTMaker) gin.HandlerFunc {
 
 		if len(authorizationHeader) == 0 {
 			err := errors.New("authorization header is not provided")
-			log.Println(err)
+			log.Println("ERROR ", err)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
@@ -28,7 +28,7 @@ func authMiddleware(tokenMaker token.JWTMaker) gin.HandlerFunc {
 		fields := strings.Fields(authorizationHeader)
 		if len(fields) < 2 {
 			err := errors.New("invalid authorization header format")
-			log.Println(err)
+			log.Println("ERROR ", err)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
@@ -36,7 +36,7 @@ func authMiddleware(tokenMaker token.JWTMaker) gin.HandlerFunc {
 		authorizationType := strings.ToLower(fields[0])
 		if authorizationType != "bearer" {
 			err := fmt.Errorf("unsupported authorization type %s", authorizationType)
-			log.Println(err)
+			log.Println("ERROR ", err)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}
@@ -44,7 +44,7 @@ func authMiddleware(tokenMaker token.JWTMaker) gin.HandlerFunc {
 		accessToken := fields[1]
 		payload, err := tokenMaker.VerifyToken(accessToken)
 		if err != nil {
-			log.Println(err)
+			log.Println("ERROR ", err)
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, errorResponse(err))
 			return
 		}

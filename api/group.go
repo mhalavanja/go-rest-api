@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/mhalavanja/go-rest-api/consts"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
 
@@ -15,19 +16,19 @@ func (server *Server) getGroups(ctx *gin.Context) {
 
 	groupNames, err := server.store.GetGroups(ctx, userId)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, groupNames)
+	ctx.JSON(http.StatusOK, groupNames)
 }
 
 func (server *Server) getGroup(ctx *gin.Context) {
 	var id int64
 	if err := ctx.ShouldBindUri(&id); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
 		return
 	}
 
@@ -40,8 +41,8 @@ func (server *Server) getGroup(ctx *gin.Context) {
 
 	group, err := server.store.GetGroup(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -51,8 +52,8 @@ func (server *Server) getGroup(ctx *gin.Context) {
 func (server *Server) createGroup(ctx *gin.Context) {
 	var name string
 	if err := ctx.ShouldBindJSON(&name); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.Provide+"group name")
 		return
 	}
 
@@ -65,8 +66,8 @@ func (server *Server) createGroup(ctx *gin.Context) {
 
 	err := server.store.CreateGroup(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -76,8 +77,8 @@ func (server *Server) createGroup(ctx *gin.Context) {
 func (server *Server) deleteGroup(ctx *gin.Context) {
 	var id int64
 	if err := ctx.ShouldBindUri(&id); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
 		return
 	}
 
@@ -91,8 +92,8 @@ func (server *Server) deleteGroup(ctx *gin.Context) {
 	err := server.store.TryDeleteGroup(ctx, arg)
 	if err != nil {
 		//TODO: Hvatati error ako korisnik pokusa brisat grupu koja nije njegova, baca se iz procedure
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -139,8 +140,8 @@ type groupIdUserIdRequest struct {
 func (server *Server) leaveGroup(ctx *gin.Context) {
 	var groupId int64
 	if err := ctx.ShouldBindUri(&groupId); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
 		return
 	}
 
@@ -153,8 +154,8 @@ func (server *Server) leaveGroup(ctx *gin.Context) {
 
 	err := server.store.LeaveGroup(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -164,14 +165,14 @@ func (server *Server) leaveGroup(ctx *gin.Context) {
 func (server *Server) addFriendToGroup(ctx *gin.Context) {
 	var req groupIdUserIdRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupIdAndUserId)
 		return
 	}
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 	if userId == req.UserId {
-		ctx.JSON(http.StatusUnprocessableEntity, "Can not add yourself to group")
+		ctx.JSON(http.StatusUnprocessableEntity, "You can not add yourself to group")
 		return
 	}
 	arg := sqlc.AddFriendToGroupParams{
@@ -181,9 +182,9 @@ func (server *Server) addFriendToGroup(ctx *gin.Context) {
 
 	err := server.store.AddFriendToGroup(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
+		log.Println("ERROR: ", err.Error())
 		// TODO: Dodati error koji se baca iz funkcije kada nisu prijatelji i hvatati ga ovdje te vracat prikladnu poruku
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
@@ -193,14 +194,14 @@ func (server *Server) addFriendToGroup(ctx *gin.Context) {
 func (server *Server) removeUserFromGroup(ctx *gin.Context) {
 	var req groupIdUserIdRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
-		log.Print(err.Error())
-		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupIdAndUserId)
 		return
 	}
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 	if userId == req.UserId {
-		ctx.JSON(http.StatusUnprocessableEntity, "Can not remove yourself to group. To leave a group use the following endpoint: /groups/:id/leave")
+		ctx.JSON(http.StatusUnprocessableEntity, "You can not remove yourself to group. To leave a group use the following endpoint: /groups/:id/leave")
 		return
 	}
 	arg := sqlc.RemoveUserFromGroupParams{
@@ -210,9 +211,9 @@ func (server *Server) removeUserFromGroup(ctx *gin.Context) {
 
 	err := server.store.RemoveUserFromGroup(ctx, arg)
 	if err != nil {
-		log.Print(err.Error())
+		log.Println("ERROR: ", err.Error())
 		// TODO: Dodati error koji se baca iz funkcije kada user nije u toj grupi
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
