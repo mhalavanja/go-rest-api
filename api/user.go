@@ -41,7 +41,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 	var req createUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		log.Println("ERROR: ", err.Error())
-		ctx.JSON(http.StatusBadRequest, consts.WrongUsernameOrPassword)
+		ctx.JSON(http.StatusBadRequest, consts.Provide+"email, username and password")
 		return
 	}
 

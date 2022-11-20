@@ -28,7 +28,9 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 		store:      store,
 	}
 	router := gin.Default()
-	router.Use(cors.Default())
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowOrigins = []string{server.config.Client}
+	router.Use(cors.New(corsConfig))
 	router.POST("/register", server.createUser)
 	router.POST("/authenticate", server.authUser)
 
