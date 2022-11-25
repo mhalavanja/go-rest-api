@@ -17,4 +17,4 @@ WHERE user_id = $1
     AND user_id_friend = $2;
 -- name: AddFriend :exec
 INSERT INTO friends (user_id, user_id_friend)
-VALUES ($1, $2);
+VALUES ($1, (SELECT id FROM users WHERE username = $2));

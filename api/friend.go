@@ -53,8 +53,8 @@ func (server *Server) getFriend(ctx *gin.Context) {
 }
 
 func (server *Server) addFriend(ctx *gin.Context) {
-	var friendId int64
-	if err := ctx.ShouldBindJSON(&friendId); err != nil {
+	var friendUsername string
+	if err := ctx.ShouldBindJSON(&friendUsername); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideFriendId)
 		return
@@ -63,8 +63,8 @@ func (server *Server) addFriend(ctx *gin.Context) {
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
 	arg := sqlc.AddFriendParams{
-		UserIDFriend: friendId,
-		UserID:       userId,
+		UserID:   userId,
+		Username: friendUsername,
 	}
 
 	err := server.store.AddFriend(ctx, arg)

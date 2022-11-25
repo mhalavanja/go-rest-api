@@ -128,15 +128,6 @@ type groupIdUserIdRequest struct {
 // 	}
 // }
 
-// func (server *Server) joinGroup(ctx *gin.Context) {
-// 	var req groupIdRequest
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		log.Print(err.Error())
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
-// }
-
 func (server *Server) leaveGroup(ctx *gin.Context) {
 	var groupId int64
 	if err := ctx.ShouldBindUri(&groupId); err != nil {
