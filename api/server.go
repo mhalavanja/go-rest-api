@@ -28,6 +28,7 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 		store:      store,
 	}
 	router := gin.Default()
+	router.SetTrustedProxies(nil)
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowOrigins = []string{server.config.Client}
 	router.Use(cors.New(corsConfig))
