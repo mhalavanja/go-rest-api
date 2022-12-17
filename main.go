@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/mhalavanja/go-rest-api/api"
+	"github.com/mhalavanja/go-rest-api/db"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/util"
 
@@ -22,7 +23,9 @@ func main() {
 		log.Fatal("cannot connect to the database: ", err)
 	}
 
+	db.ExecuteStoredProcedures(conn)
 	store := sqlc.New(conn)
+
 	server, err := api.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server: ", err)
