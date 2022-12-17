@@ -96,21 +96,30 @@ func (server *Server) updateUser(ctx *gin.Context) {
 	}
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
-	var hashedPassword []byte
+	var bytes []byte = nil
 	if req.Password != "" {
 		var err error
-		hashedPassword, err = bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+		bytes, err = bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 			return
 		}
 	}
 
+	var hashedPassword string = ""
+	if bytes != nil {
+		hashedPassword = string(bytes)
+	}
+
+	log.Println(req.Email)
+	log.Println(req.Username)
+	log.Println(req.Password)
+
 	arg := sqlc.UpdateUserParams{
 		ID:             userId,
 		Username:       req.Username,
 		Email:          req.Email,
-		HashedPassword: string(hashedPassword),
+		HashedPassword: hashedPassword,
 	}
 
 	err := server.store.UpdateUser(ctx, arg)
