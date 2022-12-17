@@ -111,10 +111,6 @@ func (server *Server) updateUser(ctx *gin.Context) {
 		hashedPassword = string(bytes)
 	}
 
-	log.Println(req.Email)
-	log.Println(req.Username)
-	log.Println(req.Password)
-
 	arg := sqlc.UpdateUserParams{
 		ID:             userId,
 		Username:       req.Username,
