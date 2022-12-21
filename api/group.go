@@ -24,8 +24,12 @@ func (server *Server) getGroups(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, groupNames)
 }
 
+type ID struct {
+	ID int64 `uri:"id" binding:"required"`
+}
+
 func (server *Server) getGroup(ctx *gin.Context) {
-	var id int64
+	var id ID
 	if err := ctx.ShouldBindUri(&id); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
@@ -34,8 +38,10 @@ func (server *Server) getGroup(ctx *gin.Context) {
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
+	log.Println(id)
+	log.Println(userId)
 	arg := sqlc.GetGroupParams{
-		ID:          id,
+		ID:          id.ID,
 		UserIDOwner: userId,
 	}
 
@@ -64,14 +70,14 @@ func (server *Server) createGroup(ctx *gin.Context) {
 		UserID:    userId,
 	}
 
-	err := server.store.CreateGroup(ctx, arg)
+	id, err := server.store.CreateGroup(ctx, arg)
 	if err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
-	ctx.Status(http.StatusCreated)
+	ctx.JSON(http.StatusCreated, id)
 }
 
 func (server *Server) deleteGroup(ctx *gin.Context) {
