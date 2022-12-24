@@ -25,7 +25,7 @@ func (server *Server) getGroups(ctx *gin.Context) {
 }
 
 type ID struct {
-	ID int64 `uri:"id" binding:"required"`
+	Id int64 `uri:"id" binding:"required"`
 }
 
 func (server *Server) getGroup(ctx *gin.Context) {
@@ -41,7 +41,7 @@ func (server *Server) getGroup(ctx *gin.Context) {
 	log.Println(id)
 	log.Println(userId)
 	arg := sqlc.GetGroupParams{
-		ID:          id.ID,
+		ID:          id.Id,
 		UserIDOwner: userId,
 	}
 

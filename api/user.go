@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/lib/pq"
 	"github.com/mhalavanja/go-rest-api/consts"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
@@ -60,6 +61,12 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 	usr, err := server.store.CreateUser(ctx, arg)
 	if err != nil {
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "23505" {
+			ctx.JSON(http.StatusConflict, consts.UserAlreadyExists)
+			return
+		}
+
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return

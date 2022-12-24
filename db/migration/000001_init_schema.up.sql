@@ -1,4 +1,3 @@
-
 CREATE TABLE "users" (
   "id" bigserial PRIMARY KEY,
   "username" varchar(30) UNIQUE NOT NULL,
@@ -8,7 +7,8 @@ CREATE TABLE "users" (
 CREATE TABLE "friends" (
   "id" bigserial PRIMARY KEY,
   "user_id" bigint NOT NULL,
-  "user_id_friend" bigint NOT NULL
+  "user_id_friend" bigint NOT NULL,
+  UNIQUE("user_id", "user_id_friend")
 );
 CREATE TABLE "groups" (
   "id" bigserial PRIMARY KEY,

@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	"github.com/mhalavanja/go-rest-api/consts"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
@@ -13,18 +14,18 @@ import (
 func (server *Server) getFriends(ctx *gin.Context) {
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
-	friendNames, err := server.store.GetFriends(ctx, userId)
+	friends, err := server.store.GetFriends(ctx, userId)
 	if err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, friendNames)
+	ctx.JSON(http.StatusOK, friends)
 }
 
 func (server *Server) getFriend(ctx *gin.Context) {
-	var friendId int64
+	var friendId ID
 	if err := ctx.ShouldBindUri(&friendId); err != nil {
 		log.Println("ERROR: getFriend friendId=", friendId, err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideFriendId)
@@ -35,7 +36,7 @@ func (server *Server) getFriend(ctx *gin.Context) {
 
 	arg := sqlc.GetFriendParams{
 		UserID:       userId,
-		UserIDFriend: friendId,
+		UserIDFriend: friendId.Id,
 	}
 
 	friend, err := server.store.GetFriend(ctx, arg)
@@ -46,7 +47,7 @@ func (server *Server) getFriend(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, sqlc.User{
-		ID:       friendId,
+		ID:       friendId.Id,
 		Username: friend.Username,
 		Email:    friend.Email,
 	})
@@ -69,6 +70,12 @@ func (server *Server) addFriend(ctx *gin.Context) {
 
 	err := server.store.AddFriend(ctx, arg)
 	if err != nil {
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "23502" {
+			ctx.JSON(http.StatusNotFound, consts.UserDoesNotExist)
+			return
+		}
+
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
