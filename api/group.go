@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/lib/pq"
 	"github.com/mhalavanja/go-rest-api/consts"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
@@ -37,9 +38,6 @@ func (server *Server) getGroup(ctx *gin.Context) {
 	}
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
-
-	log.Println(id)
-	log.Println(userId)
 	arg := sqlc.GetGroupParams{
 		ID:          id.Id,
 		UserIDOwner: userId,
@@ -81,8 +79,8 @@ func (server *Server) createGroup(ctx *gin.Context) {
 }
 
 func (server *Server) deleteGroup(ctx *gin.Context) {
-	var id int64
-	if err := ctx.ShouldBindUri(&id); err != nil {
+	var groupId ID
+	if err := ctx.ShouldBindUri(&groupId); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
 		return
@@ -91,13 +89,18 @@ func (server *Server) deleteGroup(ctx *gin.Context) {
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
 	arg := sqlc.TryDeleteGroupParams{
-		GroupID: id,
+		GroupID: groupId.Id,
 		UserID:  userId,
 	}
 
 	err := server.store.TryDeleteGroup(ctx, arg)
 	if err != nil {
-		//TODO: Hvatati error ako korisnik pokusa brisat grupu koja nije njegova, baca se iz procedure
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "NOOWN" {
+			ctx.JSON(http.StatusUnauthorized, consts.UserDoesNotExist)
+			return
+		}
+
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
@@ -215,6 +218,30 @@ func (server *Server) removeUserFromGroup(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusOK)
+}
+
+func (server *Server) getGroupUsers(ctx *gin.Context) {
+	var id ID
+	if err := ctx.ShouldBindUri(&id); err != nil {
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
+		return
+	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+	arg := sqlc.GetGroupParams{
+		ID:          id.Id,
+		UserIDOwner: userId,
+	}
+
+	group, err := server.store.GetGroup(ctx, arg)
+	if err != nil {
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, group)
 }
 
 // func (server *Server) addUserAsAdmin(ctx *gin.Context) {

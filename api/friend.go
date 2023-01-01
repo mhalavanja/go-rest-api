@@ -85,7 +85,7 @@ func (server *Server) addFriend(ctx *gin.Context) {
 }
 
 func (server *Server) deleteFriend(ctx *gin.Context) {
-	var friendId int64
+	var friendId ID
 	if err := ctx.ShouldBindUri(&friendId); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideFriendId)
@@ -95,7 +95,7 @@ func (server *Server) deleteFriend(ctx *gin.Context) {
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
 	arg := sqlc.DeleteFriendParams{
-		UserIDFriend: friendId,
+		UserIDFriend: friendId.Id,
 		UserID:       userId,
 	}
 

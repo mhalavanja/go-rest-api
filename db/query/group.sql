@@ -33,3 +33,9 @@ INSERT INTO groups_users (group_id, user_id)
 VALUES ($1, $2);
 -- name: RemoveUserFromGroup :exec
 CALL leaveGroup(@group_id::bigint, @user_id::bigint);
+-- name: GetGroupUsers :many
+SELECT users.id,
+  username
+FROM users
+  JOIN groups_users ON groups_users.user_id = users.id
+WHERE group_id = $2;
