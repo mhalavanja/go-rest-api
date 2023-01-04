@@ -97,7 +97,7 @@ func (server *Server) deleteGroup(ctx *gin.Context) {
 	if err != nil {
 		pqErr := err.(*pq.Error)
 		if string(pqErr.Code) == "NOOWN" {
-			ctx.JSON(http.StatusUnauthorized, consts.UserDoesNotExist)
+			ctx.JSON(http.StatusUnauthorized, consts.NotOwner)
 			return
 		}
 
@@ -182,8 +182,13 @@ func (server *Server) addFriendToGroup(ctx *gin.Context) {
 
 	err := server.store.AddFriendToGroup(ctx, arg)
 	if err != nil {
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "NOFRN" {
+			ctx.JSON(http.StatusUnauthorized, consts.NotFriends)
+			return
+		}
+
 		log.Println("ERROR: ", err.Error())
-		// TODO: Dodati error koji se baca iz funkcije kada nisu prijatelji i hvatati ga ovdje te vracat prikladnu poruku
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
@@ -211,8 +216,13 @@ func (server *Server) removeUserFromGroup(ctx *gin.Context) {
 
 	err := server.store.RemoveUserFromGroup(ctx, arg)
 	if err != nil {
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "NOOWN" {
+			ctx.JSON(http.StatusUnauthorized, consts.NotOwner)
+			return
+		}
+
 		log.Println("ERROR: ", err.Error())
-		// TODO: Dodati error koji se baca iz funkcije kada user nije u toj grupi
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
@@ -221,27 +231,109 @@ func (server *Server) removeUserFromGroup(ctx *gin.Context) {
 }
 
 func (server *Server) getGroupUsers(ctx *gin.Context) {
-	var id ID
-	if err := ctx.ShouldBindUri(&id); err != nil {
+	var groupId ID
+	if err := ctx.ShouldBindUri(&groupId); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
 		return
 	}
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
-	arg := sqlc.GetGroupParams{
-		ID:          id.Id,
-		UserIDOwner: userId,
+	arg := sqlc.GetGroupUsersParams{
+		UserID:  userId,
+		GroupID: groupId.Id,
 	}
 
-	group, err := server.store.GetGroup(ctx, arg)
+	users, err := server.store.GetGroupUsers(ctx, arg)
 	if err != nil {
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "NOTIN" {
+			ctx.JSON(http.StatusUnauthorized, consts.NotInGroup)
+			return
+		}
+
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, group)
+	ctx.JSON(http.StatusOK, users)
+}
+
+func (server *Server) addGroupUser(ctx *gin.Context) {
+	var groupId ID
+	if err := ctx.ShouldBindUri(&groupId); err != nil {
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
+		return
+	}
+
+	var friendId ID
+	if err := ctx.ShouldBindJSON(&friendId); err != nil {
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
+		return
+	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+	arg := sqlc.AddFriendToGroupParams{
+		UserID:   userId,
+		GroupID:  groupId.Id,
+		FriendID: friendId.Id,
+	}
+
+	err := server.store.AddFriendToGroup(ctx, arg)
+	if err != nil {
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "NOTIN" {
+			ctx.JSON(http.StatusUnauthorized, consts.NotInGroup)
+			return
+		}
+
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
+		return
+	}
+
+	ctx.Status(http.StatusCreated)
+}
+
+func (server *Server) deleteGroupUser(ctx *gin.Context) {
+	var groupId ID
+	if err := ctx.ShouldBindUri(&groupId); err != nil {
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
+		return
+	}
+
+	var friendId ID
+	if err := ctx.ShouldBindJSON(&friendId); err != nil {
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
+		return
+	}
+
+	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
+	arg := sqlc.RemoveUserFromGroupParams{
+		UserID:   userId,
+		GroupID:  groupId.Id,
+		FriendID: friendId.Id,
+	}
+
+	err := server.store.RemoveUserFromGroup(ctx, arg)
+	if err != nil {
+		pqErr := err.(*pq.Error)
+		if string(pqErr.Code) == "NOTIN" {
+			ctx.JSON(http.StatusUnauthorized, consts.NotInGroup)
+			return
+		}
+
+		log.Println("ERROR: ", err.Error())
+		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
+		return
+	}
+
+	ctx.Status(http.StatusOK)
 }
 
 // func (server *Server) addUserAsAdmin(ctx *gin.Context) {

@@ -29,13 +29,16 @@ VALUES ($1, $2);
 -- name: LeaveGroup :exec
 CALL leaveGroup(@group_id::bigint, @user_id::bigint);
 -- name: AddFriendToGroup :exec
-INSERT INTO groups_users (group_id, user_id)
-VALUES ($1, $2);
+CALL addFriendToGroup(
+  @user_id::bigint,
+  @group_id::bigint,
+  @friend_id::bigint
+);
 -- name: RemoveUserFromGroup :exec
-CALL leaveGroup(@group_id::bigint, @user_id::bigint);
+CALL removeUserFromGroup(
+  @user_id::bigint,
+  @group_id::bigint,
+  @friend_id::bigint
+);
 -- name: GetGroupUsers :many
-SELECT users.id,
-  username
-FROM users
-  JOIN groups_users ON groups_users.user_id = users.id
-WHERE group_id = $2;
+SELECT getGroupUsers(@user_id::bigint, @group_id::bigint);
