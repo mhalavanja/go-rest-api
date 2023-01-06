@@ -14,7 +14,6 @@ END IF;
 DELETE FROM groups_users
 WHERE user_id = friendId
     AND group_id = groupId;
-END IF;
 COMMIT;
 END;
 $$

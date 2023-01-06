@@ -1,4 +1,4 @@
-CREATE OR REPLACE PROCEDURE addFriendToGroup(userId bigint, groupId bigint, friendId bigint)
+CREATE OR REPLACE PROCEDURE addFriendToGroup(userId bigint, groupId bigint, friendId bigint) AS $$
 DECLARE isFriend bigint;
 BEGIN
 SELECT INTO isFriend
