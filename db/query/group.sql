@@ -41,4 +41,7 @@ CALL removeUserFromGroup(
   @friend_id::bigint
 );
 -- name: GetGroupUsers :many
-SELECT getGroupUsers(@user_id::bigint, @group_id::bigint);
+SELECT user_id_ret::bigint as user_id,
+  username_ret::text as username,
+  email_ret::text as email
+FROM getGroupUsers(@user_id::bigint, @group_id::bigint);
