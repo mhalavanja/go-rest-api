@@ -32,7 +32,7 @@ CALL leaveGroup(@group_id::bigint, @user_id::bigint);
 CALL addFriendToGroup(
   @user_id::bigint,
   @group_id::bigint,
-  @friend_id::bigint
+  @friend_username::varchar(30)
 );
 -- name: RemoveUserFromGroup :exec
 CALL removeUserFromGroup(

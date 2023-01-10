@@ -50,7 +50,7 @@ func (server *Server) getGroup(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, group)
+	ctx.JSON(http.StatusOK, group)
 }
 
 func (server *Server) createGroup(ctx *gin.Context) {
@@ -268,8 +268,8 @@ func (server *Server) addGroupUser(ctx *gin.Context) {
 		return
 	}
 
-	var friendId ID
-	if err := ctx.ShouldBindJSON(&friendId); err != nil {
+	var friendUsername string
+	if err := ctx.ShouldBindJSON(&friendUsername); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
 		return
@@ -277,9 +277,9 @@ func (server *Server) addGroupUser(ctx *gin.Context) {
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 	arg := sqlc.AddFriendToGroupParams{
-		UserID:   userId,
-		GroupID:  groupId.Id,
-		FriendID: friendId.Id,
+		UserID:         userId,
+		GroupID:        groupId.Id,
+		FriendUsername: friendUsername,
 	}
 
 	err := server.store.AddFriendToGroup(ctx, arg)
@@ -306,7 +306,7 @@ func (server *Server) deleteGroupUser(ctx *gin.Context) {
 		return
 	}
 
-	var friendId ID
+	var friendId int64
 	if err := ctx.ShouldBindJSON(&friendId); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
@@ -317,7 +317,7 @@ func (server *Server) deleteGroupUser(ctx *gin.Context) {
 	arg := sqlc.RemoveUserFromGroupParams{
 		UserID:   userId,
 		GroupID:  groupId.Id,
-		FriendID: friendId.Id,
+		FriendID: friendId,
 	}
 
 	err := server.store.RemoveUserFromGroup(ctx, arg)

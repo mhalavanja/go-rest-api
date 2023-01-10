@@ -1,0 +1,8 @@
+-- SELECT 1 INTO isFriend
+-- FROM friends
+--     JOIN users ON users.id = friends.friendId
+-- WHERE user_id = userId
+--     AND username = friendUsername;
+-- IF isFriend IS NULL THEN RAISE EXCEPTION USING errcode = 'NOFRN',
+-- MESSAGE = 'User is not friend with this person';
+-- END IF;

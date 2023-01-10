@@ -17,8 +17,9 @@ CREATE TABLE "groups" (
 );
 CREATE TABLE "groups_users" (
   "id" bigserial PRIMARY KEY,
-  "group_id" bigint UNIQUE NOT NULL,
-  "user_id" bigint NOT NULL
+  "group_id" bigint NOT NULL,
+  "user_id" bigint NOT NULL,
+  UNIQUE("group_id", "user_id")
 );
 ALTER TABLE "friends"
 ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");

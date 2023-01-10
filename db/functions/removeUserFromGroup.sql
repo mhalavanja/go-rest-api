@@ -7,7 +7,7 @@ DECLARE ownerId bigint;
 BEGIN
 SELECT user_id_owner
 FROM groups INTO ownerId
-WHERE group_id = groupId;
+WHERE id = groupId;
 IF ownerId != userId THEN RAISE EXCEPTION USING errcode = 'NOOWN',
 MESSAGE = 'User is not owner of this group';
 END IF;
