@@ -4,13 +4,15 @@ SELECT groups.id,
   username AS owner_username
 FROM groups
   JOIN users ON users.id = groups.user_id_owner
+  JOIN groups_users ON groups.id = groups_users.group_id
 WHERE groups.id = $1
-  AND user_id_owner = $2;
+  AND groups_users.user_id = $2;
 -- name: GetGroups :many
-SELECT id,
-  name
+SELECT groups.id,
+  groups.name
 FROM groups
-WHERE user_id_owner = $1;
+  JOIN groups_users ON groups.id = groups_users.group_id
+WHERE user_id = $1;
 -- name: CreateGroup :one
 SELECT createGroup(@user_id::bigint, @group_name::text);
 -- name: UpdateGroupOwner :exec
@@ -27,7 +29,10 @@ CALL tryDeleteGroup(@group_id::bigint, @user_id::bigint);
 INSERT INTO groups_users (group_id, user_id)
 VALUES ($1, $2);
 -- name: LeaveGroup :exec
-CALL leaveGroup(@group_id::bigint, @user_id::bigint);
+DELETE FROM groups_users
+WHERE user_id = $1
+  AND group_id = $2;
+-- CALL leaveGroup(@group_id::bigint, @user_id::bigint);
 -- name: AddFriendToGroup :exec
 CALL addFriendToGroup(
   @user_id::bigint,

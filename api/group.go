@@ -39,8 +39,8 @@ func (server *Server) getGroup(ctx *gin.Context) {
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 	arg := sqlc.GetGroupParams{
-		ID:          id.Id,
-		UserIDOwner: userId,
+		ID:     id.Id,
+		UserID: userId,
 	}
 
 	group, err := server.store.GetGroup(ctx, arg)
@@ -114,31 +114,8 @@ type groupIdUserIdRequest struct {
 	UserId  int64 `json:"userId" binding:"required"`
 }
 
-// func (server *Server) updateGroupOwner(ctx *gin.Context) {
-// 	var req groupIdUserIdRequest
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		log.Print(err.Error())
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
-// }
-
-// type updateGroupNameRequest struct {
-// 	GroupId   int64  `json:"groupId" binding:"required"`
-// 	GroupName string `json:"groupName" binding:"required"`
-// }
-
-// func (server *Server) updateGroupName(ctx *gin.Context) {
-// 	var req updateGroupNameRequest
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		log.Print(err.Error())
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
-// }
-
 func (server *Server) leaveGroup(ctx *gin.Context) {
-	var groupId int64
+	var groupId ID
 	if err := ctx.ShouldBindUri(&groupId); err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusBadRequest, consts.ProvideGroupId)
@@ -148,7 +125,7 @@ func (server *Server) leaveGroup(ctx *gin.Context) {
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
 	arg := sqlc.LeaveGroupParams{
-		GroupID: groupId,
+		GroupID: groupId.Id,
 		UserID:  userId,
 	}
 
@@ -285,7 +262,11 @@ func (server *Server) addGroupUser(ctx *gin.Context) {
 	err := server.store.AddFriendToGroup(ctx, arg)
 	if err != nil {
 		pqErr := err.(*pq.Error)
-		if string(pqErr.Code) == "NOTIN" {
+
+		if string(pqErr.Code) == "23505" {
+			ctx.JSON(http.StatusConflict, consts.UserInGroup)
+			return
+		} else if string(pqErr.Code) == "NOTIN" {
 			ctx.JSON(http.StatusUnauthorized, consts.NotInGroup)
 			return
 		}
@@ -335,21 +316,3 @@ func (server *Server) deleteGroupUser(ctx *gin.Context) {
 
 	ctx.Status(http.StatusOK)
 }
-
-// func (server *Server) addUserAsAdmin(ctx *gin.Context) {
-// 	var req groupIdUserIdRequest
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		log.Print(err.Error())
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
-// }
-
-// func (server *Server) removeUserAsAdmin(ctx *gin.Context) {
-// 	var req groupIdUserIdRequest
-// 	if err := ctx.ShouldBindJSON(&req); err != nil {
-// 		log.Print(err.Error())
-// 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
-// 		return
-// 	}
-// }
