@@ -23,7 +23,7 @@ type Payload struct {
 func NewPayload(userId int64, duration time.Duration) (*Payload, error) {
 	tokenId, err := uuid.NewRandom()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return nil, err
 	}
 

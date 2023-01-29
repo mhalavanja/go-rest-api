@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mhalavanja/go-rest-api/db/sqlc"
 	"github.com/mhalavanja/go-rest-api/token"
@@ -22,16 +21,16 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new JWTMaker: %w", err)
 	}
+
 	server := &Server{
 		config:     config,
 		tokenMaker: tokenMaker,
 		store:      store,
 	}
+
 	router := gin.Default()
-	router.SetTrustedProxies(nil)
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowOrigins = []string{server.config.Client}
-	router.Use(cors.New(corsConfig))
+	router.SetTrustedProxies([]string{server.config.Client})
+
 	router.POST("/register", server.createUser)
 	router.POST("/authenticate", server.authUser)
 
@@ -63,8 +62,4 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
-}
-
-func errorResponse(err error) gin.H {
-	return gin.H{"error": err.Error()}
 }
