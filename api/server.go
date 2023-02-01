@@ -10,13 +10,14 @@ import (
 )
 
 type Server struct {
-	config     util.Config
+	config     *util.Config
 	store      *sqlc.Queries
 	tokenMaker *token.JWTMaker
 	router     *gin.Engine
+	hub        *hub
 }
 
-func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
+func NewServer(config *util.Config, store *sqlc.Queries, hub *hub) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create new JWTMaker: %w", err)
@@ -26,6 +27,7 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 		config:     config,
 		tokenMaker: tokenMaker,
 		store:      store,
+		hub:        hub,
 	}
 
 	router := gin.Default()
@@ -55,6 +57,8 @@ func NewServer(config util.Config, store *sqlc.Queries) (*Server, error) {
 	authGroup.DELETE("/groups/:id", server.deleteGroup)
 	authGroup.POST("/groups/addUser", server.addFriendToGroup)
 	authGroup.DELETE("/groups/removeUser", server.removeUserFromGroup)
+
+	router.GET("/ws/groups/:id", hub.ServeWs)
 
 	server.router = router
 	return server, nil
