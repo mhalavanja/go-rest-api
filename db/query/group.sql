@@ -9,9 +9,11 @@ WHERE groups.id = $1
   AND groups_users.user_id = $2;
 -- name: GetGroups :many
 SELECT groups.id,
-  groups.name
+  groups.name,
+  username as owner
 FROM groups
   JOIN groups_users ON groups.id = groups_users.group_id
+  JOIN users ON groups.user_id_owner = users.id
 WHERE user_id = $1;
 -- name: CreateGroup :one
 SELECT createGroup(@user_id::bigint, @group_name::text);

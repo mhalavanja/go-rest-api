@@ -28,7 +28,7 @@ func main() {
 
 	upgrader := api.NewUpgrader(config)
 	hub := api.NewHub(&upgrader)
-	go hub.Run()
+	// go hub.Run()
 
 	server, err := api.NewServer(config, store, hub)
 	if err != nil {

@@ -75,6 +75,10 @@ func (server *Server) addFriend(ctx *gin.Context) {
 			ctx.JSON(http.StatusNotFound, consts.UserDoesNotExist)
 			return
 		}
+		if string(pqErr.Code) == "23505" {
+			ctx.JSON(http.StatusConflict, consts.AlreadyFriends)
+			return
+		}
 
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)

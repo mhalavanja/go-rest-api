@@ -15,14 +15,14 @@ import (
 func (server *Server) getGroups(ctx *gin.Context) {
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 
-	groupNames, err := server.store.GetGroups(ctx, userId)
+	groups, err := server.store.GetGroups(ctx, userId)
 	if err != nil {
 		log.Println("ERROR: ", err.Error())
 		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 		return
 	}
 
-	ctx.JSON(http.StatusOK, groupNames)
+	ctx.JSON(http.StatusOK, groups)
 }
 
 type ID struct {
