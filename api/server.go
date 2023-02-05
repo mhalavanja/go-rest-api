@@ -53,7 +53,7 @@ func NewServer(config *util.Config, store *sqlc.Queries, hub *hub) (*Server, err
 	authGroup.POST("/groups/:id/users", server.addGroupUser)
 	authGroup.DELETE("/groups/:id/users", server.deleteGroupUser)
 	authGroup.POST("/groups", server.createGroup)
-	authGroup.DELETE("/groups/leave/:id", server.leaveGroup)
+	authGroup.DELETE("/groups/:id/leave", server.leaveGroup)
 	authGroup.DELETE("/groups/:id", server.deleteGroup)
 	authGroup.POST("/groups/addUser", server.addFriendToGroup)
 	authGroup.DELETE("/groups/removeUser", server.removeUserFromGroup)

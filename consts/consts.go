@@ -1,6 +1,7 @@
 package consts
 
 const WrongUsernameOrPassword = "Wrong username or password"
+const WrongPassword = "Wrong password"
 const InternalErrorMessage = "Something went wrong on our end, please try again"
 const UserAlreadyExists = "User with the given email address or username already exists"
 const UserDoesNotExist = "User does not exist"

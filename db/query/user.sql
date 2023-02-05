@@ -7,6 +7,10 @@ WHERE id = $1;
 SELECT *
 FROM users
 WHERE username = $1;
+-- name: GetHashedPassword :one
+SELECT hashed_password
+FROM users
+WHERE id = $1;
 -- name: CreateUser :one
 INSERT INTO users (username, email, hashed_password)
 VALUES ($1, $2, $3)

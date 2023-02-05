@@ -89,9 +89,10 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 }
 
 type updateUserRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email" binding:"email"`
-	Password string `json:"password"`
+	Username    string `json:"username"`
+	Email       string `json:"email" binding:"email"`
+	OldPassword string `json:"old_password"`
+	NewPassword string `json:"new_password"`
 }
 
 func (server *Server) updateUser(ctx *gin.Context) {
@@ -104,9 +105,23 @@ func (server *Server) updateUser(ctx *gin.Context) {
 
 	userId := ctx.MustGet(authPayload).(*token.Payload).UserId
 	var bytes []byte = nil
-	if req.Password != "" {
-		var err error
-		bytes, err = bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+
+	if req.NewPassword != "" && req.OldPassword != "" {
+		oldHashedPassword, err := server.store.GetHashedPassword(ctx, userId)
+		if err != nil {
+			log.Println("ERROR: ", err.Error())
+			ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(oldHashedPassword), []byte(req.OldPassword))
+		if err != nil {
+			log.Println("ERROR: ", err.Error())
+			ctx.JSON(http.StatusUnauthorized, consts.WrongPassword)
+			return
+		}
+
+		bytes, err = bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
 			return
