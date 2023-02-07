@@ -34,9 +34,11 @@ func NewServer(config *util.Config, store *sqlc.Queries, hub *hub) (*Server, err
 	router.SetTrustedProxies([]string{server.config.Client})
 
 	router.POST("/register", server.createUser)
-	router.POST("/authenticate", server.authUser)
+	router.POST("/tokens/authenticate", server.authUser)
+	router.POST("/tokens/renewAccess", server.renewAccessToken)
 
 	authGroup := router.Group("/").Use(authMiddleware(*server.tokenMaker))
+	authGroup.DELETE("/tokens/refreshToken", server.deleteRefreshToken)
 
 	authGroup.GET("/user", server.getUser)
 	authGroup.DELETE("/user", server.deleteUser)

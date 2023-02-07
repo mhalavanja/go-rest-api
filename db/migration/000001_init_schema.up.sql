@@ -21,6 +21,16 @@ CREATE TABLE "groups_users" (
   "user_id" bigint NOT NULL,
   UNIQUE("group_id", "user_id")
 );
+CREATE TABLE "sessions" (
+  "id" uuid PRIMARY KEY,
+  "user_id" bigint UNIQUE NOT NULL,
+  "refresh_token" varchar NOT NULL,
+  "user_agent" varchar NOT NULL,
+  "client_ip" varchar NOT NULL,
+  "is_blocked" boolean NOT NULL DEFAULT false,
+  "expires_at" timestamp NOT NULL,
+  "created_at" timestamp NOT NULL DEFAULT (now())
+);
 ALTER TABLE "friends"
 ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
 ALTER TABLE "friends"
@@ -30,4 +40,6 @@ ADD FOREIGN KEY ("user_id_owner") REFERENCES "users" ("id");
 ALTER TABLE "groups_users"
 ADD FOREIGN KEY ("group_id") REFERENCES "groups" ("id");
 ALTER TABLE "groups_users"
+ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");
+ALTER TABLE "sessions"
 ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");

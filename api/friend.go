@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"log"
 	"net/http"
 
@@ -70,11 +71,11 @@ func (server *Server) addFriend(ctx *gin.Context) {
 
 	err := server.store.AddFriend(ctx, arg)
 	if err != nil {
-		pqErr := err.(*pq.Error)
-		if string(pqErr.Code) == "23502" {
+		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, consts.UserDoesNotExist)
 			return
 		}
+		pqErr := err.(*pq.Error)
 		if string(pqErr.Code) == "23505" {
 			ctx.JSON(http.StatusConflict, consts.AlreadyFriends)
 			return
