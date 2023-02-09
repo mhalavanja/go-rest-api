@@ -17,7 +17,7 @@ const authPayload = "authorization_payload"
 func authMiddleware(tokenMaker token.JWTMaker) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		authorizationHeader := ctx.GetHeader("authorization")
-
+		log.Println("authMiddleware")
 		if len(authorizationHeader) == 0 {
 			err := errors.New("authorization header is not provided")
 			log.Println("ERROR ", err)

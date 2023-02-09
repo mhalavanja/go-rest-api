@@ -72,7 +72,6 @@ func (server *Server) authUser(ctx *gin.Context) {
 		return
 	}
 	if err == sql.ErrNoRows {
-
 		refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(user.ID, server.config.RefreshTokenDuration)
 		if err != nil {
 			log.Println("ERROR: ", err.Error())
@@ -151,7 +150,7 @@ func (server *Server) renewAccessToken(ctx *gin.Context) {
 	}
 
 	if time.Now().After(session.ExpiresAt) {
-		ctx.JSON(http.StatusUnauthorized, consts.MismatchedSessionToken)
+		ctx.JSON(http.StatusUnauthorized, consts.ExpiredSession)
 		return
 	}
 

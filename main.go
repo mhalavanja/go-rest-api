@@ -24,12 +24,11 @@ func main() {
 	}
 
 	db.ExecuteStoredProcedures(conn)
+
+	hub := api.NewHub(config)
+	go hub.Run()
+
 	store := sqlc.New(conn)
-
-	upgrader := api.NewUpgrader(config)
-	hub := api.NewHub(&upgrader)
-	// go hub.Run()
-
 	server, err := api.NewServer(config, store, hub)
 	if err != nil {
 		log.Fatal("cannot create server: ", err)
