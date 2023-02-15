@@ -1,7 +1,7 @@
 CREATE TABLE "users" (
   "id" bigserial PRIMARY KEY,
-  "username" varchar(30) UNIQUE NOT NULL,
-  "email" varchar(30) UNIQUE NOT NULL,
+  "username" varchar UNIQUE NOT NULL,
+  "email" varchar UNIQUE NOT NULL,
   "hashed_password" varchar(128) NOT NULL
 );
 CREATE TABLE "friends" (
@@ -12,7 +12,7 @@ CREATE TABLE "friends" (
 );
 CREATE TABLE "groups" (
   "id" bigserial PRIMARY KEY,
-  "name" varchar(60) NOT NULL,
+  "name" varchar NOT NULL,
   "user_id_owner" bigint NOT NULL
 );
 CREATE TABLE "groups_users" (
@@ -25,11 +25,9 @@ CREATE TABLE "sessions" (
   "id" uuid PRIMARY KEY,
   "user_id" bigint UNIQUE NOT NULL,
   "refresh_token" varchar NOT NULL,
-  "user_agent" varchar NOT NULL,
-  "client_ip" varchar NOT NULL,
   "is_blocked" boolean NOT NULL DEFAULT false,
-  "expires_at" timestamp NOT NULL,
-  "created_at" timestamp NOT NULL DEFAULT (now())
+  "expires_at" timestamptz NOT NULL,
+  "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 ALTER TABLE "friends"
 ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id");

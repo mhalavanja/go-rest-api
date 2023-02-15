@@ -66,12 +66,7 @@ func (server *Server) authUser(ctx *gin.Context) {
 	}
 
 	session, err := server.store.GetSessionByUserId(ctx, user.ID)
-	if err != nil && err != sql.ErrNoRows {
-		log.Println("ERROR: ", err.Error())
-		ctx.JSON(http.StatusInternalServerError, consts.InternalErrorMessage)
-		return
-	}
-	if err == sql.ErrNoRows || time.Now().After(session.ExpiresAt) || session.IsBlocked {
+	if err != nil || time.Now().After(session.ExpiresAt) || session.IsBlocked {
 		refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(user.ID, server.config.RefreshTokenDuration)
 		if err != nil {
 			log.Println("ERROR: ", err.Error())
